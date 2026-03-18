@@ -184,7 +184,7 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
     <div class="balance-amount" id="header-balance">–</div>
     <div class="balance-sub">
       <div class="balance-chip" id="header-mes">Cargando...</div>
-      <div class="balance-chip warn" id="header-cobro">...</div>
+      <div class="balance-chip warn" id="header-fin de mes">...</div>
     </div>
   </div>
 </header>
@@ -367,7 +367,7 @@ function renderHeader(d) {
   var restSem = d.presupSemanal - d.totalSemana;
   document.getElementById('header-balance').textContent = $$(restSem);
   document.getElementById('header-mes').textContent = 'Mes: ' + $$(d.totalMes);
-  document.getElementById('header-cobro').textContent = 'Cobro: ' + fd(d.fechaCierre);
+  document.getElementById('header-fin de mes').textContent = 'fin de mes: ' + fd(d.fechaCierre);
 }
 
 function renderResumen(d) {
@@ -381,7 +381,7 @@ function renderResumen(d) {
   var html =
     '<div class="stats-grid">' +
     '<div class="stat-card"><div class="stat-icon">☀️</div><div class="stat-label">Hoy</div><div class="stat-value pink">' + $$(d.totalHoy) + '</div></div>' +
-    '<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Cobro</div><div class="stat-value">' + fd(d.fechaCierre) + '</div><div class="stat-sub">' + d.semanasRestantes + ' semanas</div></div>' +
+    '<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">fin de mes</div><div class="stat-value">' + fd(d.fechaCierre) + '</div><div class="stat-sub">' + d.semanasRestantes + ' semanas</div></div>' +
     '</div>' +
 
     '<div class="chart-card">' +
