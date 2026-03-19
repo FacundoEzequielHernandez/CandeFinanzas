@@ -298,6 +298,13 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
   </div>
 </div>
 
+<!-- PAGE: TC -->
+<div id="page-tc" class="page">
+  <div class="section" style="padding-top:16px">
+    <div id="tc-content"><div class="loader"><div class="spin"></div>Cargando...</div></div>
+  </div>
+</div>
+
 <nav class="bottom-nav">
   <button class="bnav-btn active" onclick="showPage('cargar',this)">
     <span class="bnav-icon">✏️</span><span class="bnav-label">Anotar</span>
@@ -310,6 +317,9 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
   </button>
   <button class="bnav-btn" onclick="showPage('graficos',this)">
     <span class="bnav-icon">📈</span><span class="bnav-label">Gráficos</span>
+  </button>
+  <button class="bnav-btn" onclick="showPage('tc',this)">
+    <span class="bnav-icon">💳</span><span class="bnav-label">Tarjeta</span>
   </button>
 </nav>
 
@@ -389,6 +399,7 @@ function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'graficos') cargarGraficos();
+  if (id === 'tc') cargarTC();
 }
 
 // ── CATEGORÍA ──
@@ -539,6 +550,91 @@ function renderChartDias(gastos) {
     data: { labels:labels, datasets:[{ data:values, backgroundColor:values.map(function(v,i){ return i===values.length-1?'#f48fb1':'#f8bbd0'; }), borderRadius:10, borderSkipped:false }] },
     options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ' '+fmt.format(ctx.parsed.y); } } } }, scales:{ x:{ticks:{color:'#c4afc4',font:{family:'Nunito',size:10,weight:'700'}},grid:{display:false}}, y:{ticks:{color:'#c4afc4',font:{family:'Nunito',size:10},callback:function(v){ return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }},grid:{color:'#fce4ec'}} } }
   });
+}
+
+// ── TARJETA ──
+function cargarTC() {
+  document.getElementById('tc-content').innerHTML = '<div class="loader"><div class="spin"></div>Cargando...</div>';
+  apiGet('tc').then(function(d) {
+    if (d.error) { document.getElementById('tc-content').innerHTML = '<div class="empty-state"><div class="empty-emoji">⚠️</div><div class="empty-text">' + d.error + '</div></div>'; return; }
+    renderTC(d);
+  }).catch(function(){ document.getElementById('tc-content').innerHTML = '<div class="empty-state"><div class="empty-emoji">📡</div><div class="empty-text">Sin conexión</div></div>'; });
+}
+
+function renderTC(d) {
+  var html = '';
+
+  // Info del período
+  var hoy = new Date().toISOString().split('T')[0];
+  var proximoCierre = d.proximoCierre;
+  var proximoVto    = d.proximoVto;
+  var proximoCobro  = d.proximoCobro;
+  var cobraAntes    = d.cobraAntes;
+
+  // Header info
+  html += '<div class="chart-card">' +
+    '<div class="stats-grid">' +
+    '<div class="stat-card"><div class="stat-icon">✂️</div><div class="stat-label">Próx. cierre</div><div class="stat-value pink">' + fd(proximoCierre) + '</div></div>' +
+    '<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Vencimiento</div><div class="stat-value">' + fd(proximoVto) + '</div></div>' +
+    '</div>' +
+    '<div class="stat-card full" style="margin-top:10px;background:' + (cobraAntes ? '#fff8f0' : '#f0fff4') + ';border:2px solid ' + (cobraAntes ? '#ffab91' : '#a5d6a7') + '">' +
+    '<div style="font-size:13px;font-weight:700;color:' + (cobraAntes ? '#e64a19' : '#388e3c') + '">' +
+    (cobraAntes ? '⚠️ Cobrás el ' + fd(proximoCobro) + ' antes del vto — usá sueldo actual' : '✅ Cobrás el ' + fd(proximoCobro) + ' antes del vto — podés usar sueldo nuevo') +
+    '</div></div>' +
+    '</div>';
+
+  // Período a pagar (si aplica)
+  if (d.entreVtoYCierre && d.totalAPagar > 0) {
+    html += '<div class="chart-card">' +
+      '<div class="section-title" style="color:#e64a19">📌 A pagar ahora</div>' +
+      '<div class="stat-card" style="margin-bottom:10px;background:#fff8f0;border:2px solid #ffab91">' +
+      '<div class="stat-label">Total a pagar</div>' +
+      '<div class="stat-value" style="color:#e64a19">' + $$(d.totalAPagar) + '</div>' +
+      '</div>';
+    if (Object.keys(d.periodoAPagar).length) {
+      html += '<div class="gastos-list" style="margin-bottom:0">';
+      Object.keys(d.periodoAPagar).sort(function(a,b){ return d.periodoAPagar[b]-d.periodoAPagar[a]; }).forEach(function(cat) {
+        html += '<div class="gasto-item"><div class="gasto-bubble">' + (ICONOS[cat]||'📦') + '</div>' +
+          '<div class="gasto-info"><div class="gasto-desc">' + cat + '</div></div>' +
+          '<div class="gasto-right"><div class="gasto-monto">' + $$(d.periodoAPagar[cat]) + '</div></div></div>';
+      });
+      html += '</div>';
+    }
+    if (d.cuotas && d.cuotas.length) {
+      html += '<div style="margin-top:10px;padding:10px;background:var(--lila-light);border-radius:12px">' +
+        '<div style="font-size:11px;font-weight:800;color:var(--lila);margin-bottom:6px">CUOTAS ACTIVAS</div>';
+      d.cuotas.forEach(function(c) {
+        html += '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--text);padding:4px 0">' +
+          '<span>' + c.descripcion + ' (' + c.pagadas + '/' + c.total + ')</span>' +
+          '<span>' + $$(c.cuotaMes) + '/mes</span></div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Período acumulando
+  html += '<div class="chart-card">' +
+    '<div class="section-title">📈 Acumulando</div>' +
+    '<div class="stat-card" style="margin-bottom:10px">' +
+    '<div class="stat-label">Total acumulado</div>' +
+    '<div class="stat-value pink">' + $$(d.totalEnCurso) + '</div>' +
+    '<div class="stat-sub">desde ' + fd(d.cierreActual) + '</div>' +
+    '</div>';
+  if (Object.keys(d.periodoEnCurso).length) {
+    html += '<div class="gastos-list" style="margin-bottom:0">';
+    Object.keys(d.periodoEnCurso).sort(function(a,b){ return d.periodoEnCurso[b]-d.periodoEnCurso[a]; }).forEach(function(cat) {
+      html += '<div class="gasto-item"><div class="gasto-bubble">' + (ICONOS[cat]||'📦') + '</div>' +
+        '<div class="gasto-info"><div class="gasto-desc">' + cat + '</div></div>' +
+        '<div class="gasto-right"><div class="gasto-monto">' + $$(d.periodoEnCurso[cat]) + '</div></div></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="empty-state"><div class="empty-emoji">🌸</div><div class="empty-text">Sin gastos TC en este período</div></div>';
+  }
+  html += '</div>';
+
+  document.getElementById('tc-content').innerHTML = html;
 }
 
 // ── TC ──
