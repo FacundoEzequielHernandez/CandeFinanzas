@@ -162,6 +162,9 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
 .spin { width:28px; height:28px; border:3px solid var(--pink-light); border-top-color:var(--pink); border-radius:50%; animation:spin .7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
+.cuota-chip { background:var(--bg); border:2px solid var(--border); border-radius:99px; padding:6px 14px; font-size:12px; font-weight:800; color:var(--text2); cursor:pointer; transition:all .2s; font-family:var(--font); }
+.cuota-chip.active { background:var(--lila-light); border-color:var(--lila); color:var(--lila); }
+
 /* PULSE animation for save button */
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
 
@@ -184,7 +187,7 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
     <div class="balance-amount" id="header-balance">–</div>
     <div class="balance-sub">
       <div class="balance-chip" id="header-mes">Cargando...</div>
-      <div class="balance-chip warn" id="header-fin de mes">...</div>
+      <div class="balance-chip warn" id="header-cobro">...</div>
     </div>
   </div>
 </header>
@@ -199,13 +202,17 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
         <input type="number" class="amount-input" id="g-monto" placeholder="0">
       </div>
       <div class="cat-grid" id="cat-grid">
-        <button class="cat-btn active" data-cat="comida" onclick="selectCat(this)"><span class="emoji">🍕</span><span class="label">Comida</span></button>
-        <button class="cat-btn" data-cat="transporte" onclick="selectCat(this)"><span class="emoji">🚗</span><span class="label">Transp.</span></button>
-        <button class="cat-btn" data-cat="salud" onclick="selectCat(this)"><span class="emoji">💊</span><span class="label">Salud</span></button>
+        <button class="cat-btn active" data-cat="verduleria" onclick="selectCat(this)"><span class="emoji">🥦</span><span class="label">Verdulería</span></button>
+        <button class="cat-btn" data-cat="carniceria" onclick="selectCat(this)"><span class="emoji">🥩</span><span class="label">Carnicería</span></button>
+        <button class="cat-btn" data-cat="educacion" onclick="selectCat(this)"><span class="emoji">📚</span><span class="label">Educación</span></button>
+        <button class="cat-btn" data-cat="servicios" onclick="selectCat(this)"><span class="emoji">💡</span><span class="label">Servicios</span></button>
+        <button class="cat-btn" data-cat="nafta" onclick="selectCat(this)"><span class="emoji">⛽</span><span class="label">Nafta</span></button>
+        <button class="cat-btn" data-cat="masajes" onclick="selectCat(this)"><span class="emoji">💆</span><span class="label">Masajes</span></button>
+        <button class="cat-btn" data-cat="hombres" onclick="selectCat(this)"><span class="emoji">👔</span><span class="label">Hombres</span></button>
+        <button class="cat-btn" data-cat="salud" onclick="selectCat(this)"><span class="emoji">🩺</span><span class="label">Salud</span></button>
+        <button class="cat-btn" data-cat="ropa" onclick="selectCat(this)"><span class="emoji">👗</span><span class="label">Ropa</span></button>
         <button class="cat-btn" data-cat="entretenimiento" onclick="selectCat(this)"><span class="emoji">🎬</span><span class="label">Entret.</span></button>
         <button class="cat-btn" data-cat="hogar" onclick="selectCat(this)"><span class="emoji">🏠</span><span class="label">Hogar</span></button>
-        <button class="cat-btn" data-cat="ropa" onclick="selectCat(this)"><span class="emoji">👗</span><span class="label">Ropa</span></button>
-        <button class="cat-btn" data-cat="seguros" onclick="selectCat(this)"><span class="emoji">🛡</span><span class="label">Seguros</span></button>
         <button class="cat-btn" data-cat="otros" onclick="selectCat(this)"><span class="emoji">📦</span><span class="label">Otros</span></button>
       </div>
       <div class="row-2">
@@ -214,6 +221,49 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
       </div>
       <button class="btn-save" id="btn-save" onclick="guardarGasto()">
         <span>💾</span> Guardar gasto
+      </button>
+    </div>
+
+    <!-- TC CARD -->
+    <div class="quick-card" style="margin-top:12px">
+      <div class="quick-title">💳 Gasto con tarjeta</div>
+      <div class="amount-input-wrap">
+        <span class="amount-prefix">$</span>
+        <input type="number" class="amount-input" id="tc-monto" placeholder="0">
+      </div>
+      <div class="cat-grid">
+        <button class="cat-btn active" data-cat="verduleria" onclick="selectCatTC(this)"><span class="emoji">🥦</span><span class="label">Verdulería</span></button>
+        <button class="cat-btn" data-cat="carniceria" onclick="selectCatTC(this)"><span class="emoji">🥩</span><span class="label">Carnicería</span></button>
+        <button class="cat-btn" data-cat="educacion" onclick="selectCatTC(this)"><span class="emoji">📚</span><span class="label">Educación</span></button>
+        <button class="cat-btn" data-cat="servicios" onclick="selectCatTC(this)"><span class="emoji">💡</span><span class="label">Servicios</span></button>
+        <button class="cat-btn" data-cat="nafta" onclick="selectCatTC(this)"><span class="emoji">⛽</span><span class="label">Nafta</span></button>
+        <button class="cat-btn" data-cat="masajes" onclick="selectCatTC(this)"><span class="emoji">💆</span><span class="label">Masajes</span></button>
+        <button class="cat-btn" data-cat="hombres" onclick="selectCatTC(this)"><span class="emoji">👔</span><span class="label">Hombres</span></button>
+        <button class="cat-btn" data-cat="ropa" onclick="selectCatTC(this)"><span class="emoji">👗</span><span class="label">Ropa</span></button>
+        <button class="cat-btn" data-cat="salud" onclick="selectCatTC(this)"><span class="emoji">🩺</span><span class="label">Salud</span></button>
+        <button class="cat-btn" data-cat="entretenimiento" onclick="selectCatTC(this)"><span class="emoji">🎬</span><span class="label">Entret.</span></button>
+        <button class="cat-btn" data-cat="hogar" onclick="selectCatTC(this)"><span class="emoji">🏠</span><span class="label">Hogar</span></button>
+        <button class="cat-btn" data-cat="otros" onclick="selectCatTC(this)"><span class="emoji">📦</span><span class="label">Otros</span></button>
+      </div>
+      <div class="row-2">
+        <input type="text" class="desc-input" id="tc-desc" placeholder="¿En qué gastaste?">
+        <input type="date" class="desc-input date-input" id="tc-fecha">
+      </div>
+      <!-- Cuotas -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:8px">¿En cuotas?</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="cuota-chip active" data-cuotas="1" onclick="selectCuotas(this)">1 cuota</button>
+          <button class="cuota-chip" data-cuotas="3" onclick="selectCuotas(this)">3 cuotas</button>
+          <button class="cuota-chip" data-cuotas="6" onclick="selectCuotas(this)">6 cuotas</button>
+          <button class="cuota-chip" data-cuotas="12" onclick="selectCuotas(this)">12 cuotas</button>
+          <button class="cuota-chip" data-cuotas="18" onclick="selectCuotas(this)">18 cuotas</button>
+          <button class="cuota-chip" data-cuotas="custom" onclick="selectCuotas(this)">Otra</button>
+        </div>
+        <input type="number" class="desc-input" id="tc-cuotas-custom" placeholder="Cantidad de cuotas" style="margin-top:8px;display:none">
+      </div>
+      <button class="btn-save" id="btn-save-tc" onclick="guardarGastoTC()" style="background:linear-gradient(135deg,#ce93d8,#f48fb1)">
+        <span>💳</span> Guardar con tarjeta
       </button>
     </div>
   </div>
@@ -266,11 +316,29 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
 <div id="toast"></div>
 
 <script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbw9HZCQH4LVb_ieQyHF6zvPROGEKJp63QWzu_m5-b1NkoJsI4E_OTOfKd2sIV0SLYvy/exec';
-var ICONOS  = { comida:'🍕', transporte:'🚗', salud:'💊', entretenimiento:'🎬', hogar:'🏠', ropa:'👗', educacion:'📚', seguros:'🛡', prestamos:'💰', tabaco:'🚬', bebidas:'🥤', otros:'📦' };
+var API_URL = 'REEMPLAZAR_CON_URL_DE_CANDE';
+var ICONOS  = { verduleria:'🥦', carniceria:'🥩', educacion:'📚', servicios:'💡', nafta:'⛽', masajes:'💆', hombres:'👔', salud:'🩺', ropa:'👗', entretenimiento:'🎬', hogar:'🏠', otros:'📦', cuotas:'🔢' };
 var COLORS  = ['#f48fb1','#ce93d8','#ffab91','#a5d6a7','#80cbc4','#90caf9','#ffe082','#ef9a9a','#b39ddb','#80deea'];
 var gastosCache = [];
-var catSeleccionada = 'comida';
+var catSeleccionadaTC = 'verduleria';
+var cuotasSeleccionadas = 1;
+
+var CIERRES_TC = [
+  '2026-01-22','2026-02-19','2026-03-19','2026-04-16',
+  '2026-05-15','2026-06-19','2026-07-17','2026-08-14',
+  '2026-09-18','2026-10-16','2026-11-13','2026-12-18'
+];
+var VENCIMIENTOS_TC = [
+  '2026-01-02','2026-02-02','2026-03-02','2026-04-01',
+  '2026-05-04','2026-06-01','2026-07-01','2026-08-03',
+  '2026-09-01','2026-10-01','2026-11-02','2026-12-01'
+];
+var FECHAS_COBRO = [
+  '2026-01-08','2026-02-06','2026-03-07','2026-04-07',
+  '2026-05-07','2026-06-05','2026-07-07','2026-08-07',
+  '2026-09-07','2026-10-07','2026-11-06','2026-12-05'
+];
+var catSeleccionada = 'verduleria';
 var chartCat = null, chartDias = null;
 var fmt = new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 });
 function $$(v) { return fmt.format(v); }
@@ -367,7 +435,7 @@ function renderHeader(d) {
   var restSem = d.presupSemanal - d.totalSemana;
   document.getElementById('header-balance').textContent = $$(restSem);
   document.getElementById('header-mes').textContent = 'Mes: ' + $$(d.totalMes);
-  document.getElementById('header-fin de mes').textContent = 'fin de mes: ' + fd(d.fechaCierre);
+  document.getElementById('header-cobro').textContent = 'Cobro: ' + fd(d.fechaCierre);
 }
 
 function renderResumen(d) {
@@ -381,7 +449,7 @@ function renderResumen(d) {
   var html =
     '<div class="stats-grid">' +
     '<div class="stat-card"><div class="stat-icon">☀️</div><div class="stat-label">Hoy</div><div class="stat-value pink">' + $$(d.totalHoy) + '</div></div>' +
-    '<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">fin de mes</div><div class="stat-value">' + fd(d.fechaCierre) + '</div><div class="stat-sub">' + d.semanasRestantes + ' semanas</div></div>' +
+    '<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Cobro</div><div class="stat-value">' + fd(d.fechaCierre) + '</div><div class="stat-sub">' + d.semanasRestantes + ' semanas</div></div>' +
     '</div>' +
 
     '<div class="chart-card">' +
@@ -471,6 +539,78 @@ function renderChartDias(gastos) {
     data: { labels:labels, datasets:[{ data:values, backgroundColor:values.map(function(v,i){ return i===values.length-1?'#f48fb1':'#f8bbd0'; }), borderRadius:10, borderSkipped:false }] },
     options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ' '+fmt.format(ctx.parsed.y); } } } }, scales:{ x:{ticks:{color:'#c4afc4',font:{family:'Nunito',size:10,weight:'700'}},grid:{display:false}}, y:{ticks:{color:'#c4afc4',font:{family:'Nunito',size:10},callback:function(v){ return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }},grid:{color:'#fce4ec'}} } }
   });
+}
+
+// ── TC ──
+function selectCatTC(btn) {
+  btn.closest('.quick-card').querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  catSeleccionadaTC = btn.getAttribute('data-cat');
+}
+
+function selectCuotas(btn) {
+  document.querySelectorAll('.cuota-chip').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var val = btn.getAttribute('data-cuotas');
+  var custom = document.getElementById('tc-cuotas-custom');
+  if (val === 'custom') {
+    custom.style.display = 'block';
+    cuotasSeleccionadas = 0;
+  } else {
+    custom.style.display = 'none';
+    cuotasSeleccionadas = parseInt(val);
+  }
+}
+
+function guardarGastoTC() {
+  var monto = parseFloat(document.getElementById('tc-monto').value);
+  if (!monto || monto <= 0) { toast('❌ Ingresá un monto'); return; }
+
+  var custom = document.getElementById('tc-cuotas-custom');
+  if (custom.style.display !== 'none') cuotasSeleccionadas = parseInt(custom.value) || 1;
+
+  var btn = document.getElementById('btn-save-tc');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
+
+  var fecha = document.getElementById('tc-fecha').value;
+
+  if (cuotasSeleccionadas > 1) {
+    // Registrar como cuota
+    apiPost({
+      webAction:   'agregarCuota',
+      descripcion: document.getElementById('tc-desc').value || catSeleccionadaTC,
+      total:       monto,
+      cuotas:      cuotasSeleccionadas,
+      tarjeta:     'TC',
+      pagadas:     0
+    }).then(function(r) {
+      if (r.ok) {
+        toast('✅ Cuota registrada (' + cuotasSeleccionadas + ' cuotas de $' + (monto/cuotasSeleccionadas).toFixed(0) + ')');
+        document.getElementById('tc-monto').value = '';
+        document.getElementById('tc-desc').value  = '';
+        cargarTodo();
+      } else toast('❌ ' + (r.error||'Error'));
+    }).catch(function(){ toast('❌ Sin conexión'); })
+    .finally(function(){ btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
+  } else {
+    // Registrar como gasto TC simple
+    apiPost({
+      webAction:   'agregarGasto',
+      monto:       monto,
+      categoria:   catSeleccionadaTC,
+      descripcion: document.getElementById('tc-desc').value,
+      fecha:       fecha,
+      tarjeta:     'TC'
+    }).then(function(r) {
+      if (r.ok) {
+        toast('✅ ¡Guardado con tarjeta!');
+        document.getElementById('tc-monto').value = '';
+        document.getElementById('tc-desc').value  = '';
+        cargarTodo();
+      } else toast('❌ ' + (r.error||'Error'));
+    }).catch(function(){ toast('❌ Sin conexión'); })
+    .finally(function(){ btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
+  }
 }
 
 // ── UTILS ──
