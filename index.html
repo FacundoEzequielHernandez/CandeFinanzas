@@ -448,13 +448,16 @@ function guardarGasto() {
   
 fetch(API_URL, {
   method: 'POST',
-  body: new URLSearchParams({
+  headers: {
+    'Content-Type': 'text/plain'
+  },
+  body: JSON.stringify({
     webAction: 'agregarGasto',
     monto: monto,
     categoria: catSeleccionada,
     descripcion: document.getElementById('g-desc').value,
     fecha: document.getElementById('g-fecha').value,
-    tarjeta: ''
+    tarjeta: null
   })
 })
 .then(r => r.json())
@@ -472,11 +475,6 @@ fetch(API_URL, {
   console.error(err);
   toast('❌ Sin conexión: ' + err.message);
 });
-  .finally(function() { 
-    btn.disabled = false; 
-    btn.innerHTML = '<span>💾</span> Guardar gasto'; 
-  });
-}
 
 // ── RESUMEN ──
 function cargarResumen() {
