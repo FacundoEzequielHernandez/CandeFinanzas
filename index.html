@@ -477,47 +477,6 @@ function guardarGasto() {
   });
 }
 
-// ── GUARDAR GASTO CON TARJETA ──
-async function guardarGasto() {
-  var monto = parseFloat(document.getElementById('g-monto').value);
-  if (!monto || monto <= 0) { toast('❌ Ingresá un monto'); return; }
-  var btn = document.getElementById('btn-save');
-  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
-  
-  try {
-    // Primero, obtener la URL de redirección con un GET
-    const redirectResponse = await fetch(API_URL, { method: 'GET' });
-    const redirectUrl = redirectResponse.url;
-    
-    // Luego, hacer el POST a la URL de redirección
-    const response = await fetch(redirectUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },  // text/plain evita preflight
-      body: JSON.stringify({
-        webAction: 'agregarGasto',
-        monto: monto,
-        categoria: catSeleccionada,
-        descripcion: document.getElementById('g-desc').value,
-        fecha: document.getElementById('g-fecha').value,
-        tarjeta: null
-      })
-    });
-    
-    const result = await response.json();
-    if (result.ok) {
-      toast('✅ ¡Guardado!');
-      document.getElementById('g-monto').value = '';
-      document.getElementById('g-desc').value = '';
-      cargarTodo();
-    } else toast('❌ ' + (result.error || 'Error'));
-  } catch (err) {
-    console.error(err);
-    toast('❌ Sin conexión: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span>💾</span> Guardar gasto';
-  }
-}
 // ── RESUMEN ──
 function cargarResumen() {
   apiGet('resumen').then(function(d) {
