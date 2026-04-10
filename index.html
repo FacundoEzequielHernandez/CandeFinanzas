@@ -165,9 +165,6 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
 .cuota-chip { background:var(--bg); border:2px solid var(--border); border-radius:99px; padding:6px 14px; font-size:12px; font-weight:800; color:var(--text2); cursor:pointer; transition:all .2s; font-family:var(--font); }
 .cuota-chip.active { background:var(--lila-light); border-color:var(--lila); color:var(--lila); }
 
-/* PULSE animation for save button */
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
-
 @media (min-width:600px) {
   .quick-add, .section { max-width:500px; margin-left:auto; margin-right:auto; }
   .header { padding-left:calc(50% - 230px); padding-right:calc(50% - 230px); }
@@ -249,7 +246,6 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
         <input type="text" class="desc-input" id="tc-desc" placeholder="¿En qué gastaste?">
         <input type="date" class="desc-input date-input" id="tc-fecha">
       </div>
-      <!-- Cuotas -->
       <div style="margin-bottom:12px">
         <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:8px">¿En cuotas?</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -326,13 +322,14 @@ body { background:var(--bg); transition:background .3s, color .3s; color:var(--t
 <div id="toast"></div>
 
 <script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbw9HZCQH4LVb_ieQyHF6zvPROGEKJp63QWzu_m5-b1NkoJsI4E_OTOfKd2sIV0SLYvy/exec';
-var ICONOS  = { verduleria:'🥦', carniceria:'🥩', educacion:'📚', servicios:'💡', nafta:'⛽', masajes:'💆', hombres:'👔', salud:'🩺', ropa:'👗', entretenimiento:'🎬', hogar:'🏠', otros:'📦', cuotas:'🔢' };
-var COLORS  = ['#f48fb1','#ce93d8','#ffab91','#a5d6a7','#80cbc4','#90caf9','#ffe082','#ef9a9a','#b39ddb','#80deea'];
-var gastosCache = [];
-var catSeleccionadaTC = 'verduleria';
-var cuotasSeleccionadas = 1;
+// ════════════════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN - ACTUALIZAR ESTA URL CON LA DE TU APPS SCRIPT
+// ════════════════════════════════════════════════════════════════════════════
+var API_URL = 'https://script.google.com/macros/s/AKfycbw9HZCQH4LVb_ieQyHF6zvPROGEKJp63QWzu_m5-b1NkoJsI4E_OTOfKd2sIV0SLYvy/exec';  // <--- CAMBIAR ESTO
 
+// ════════════════════════════════════════════════════════════════════════════
+// FECHAS CORRECTAS DE CANDELA
+// ════════════════════════════════════════════════════════════════════════════
 var CIERRES_TC = [
   '2026-01-22','2026-02-19','2026-03-19','2026-04-16',
   '2026-05-15','2026-06-19','2026-07-17','2026-08-14',
@@ -348,6 +345,15 @@ var FECHAS_COBRO = [
   '2026-05-07','2026-06-05','2026-07-07','2026-08-07',
   '2026-09-07','2026-10-07','2026-11-06','2026-12-05'
 ];
+
+// ════════════════════════════════════════════════════════════════════════════
+// VARIABLES GLOBALES
+// ════════════════════════════════════════════════════════════════════════════
+var ICONOS  = { verduleria:'🥦', carniceria:'🥩', educacion:'📚', servicios:'💡', nafta:'⛽', masajes:'💆', hombres:'👔', salud:'🩺', ropa:'👗', entretenimiento:'🎬', hogar:'🏠', otros:'📦', cuotas:'🔢' };
+var COLORS  = ['#f48fb1','#ce93d8','#ffab91','#a5d6a7','#80cbc4','#90caf9','#ffe082','#ef9a9a','#b39ddb','#80deea'];
+var gastosCache = [];
+var catSeleccionadaTC = 'verduleria';
+var cuotasSeleccionadas = 1;
 var catSeleccionada = 'verduleria';
 var chartCat = null, chartDias = null;
 var fmt = new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 });
@@ -389,7 +395,11 @@ function apiGet(action) {
   return fetch(API_URL + '?action=' + action).then(function(r){ return r.json(); });
 }
 function apiPost(data) {
-  return fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }).then(function(r){ return r.json(); });
+  return fetch(API_URL, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(data) 
+  }).then(function(r){ return r.json(); });
 }
 
 // ── NAV ──
@@ -409,28 +419,126 @@ function selectCat(btn) {
   catSeleccionada = btn.getAttribute('data-cat');
 }
 
-// ── GUARDAR GASTO ──
+function selectCatTC(btn) {
+  btn.closest('.quick-card').querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  catSeleccionadaTC = btn.getAttribute('data-cat');
+}
+
+function selectCuotas(btn) {
+  document.querySelectorAll('.cuota-chip').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var val = btn.getAttribute('data-cuotas');
+  var custom = document.getElementById('tc-cuotas-custom');
+  if (val === 'custom') {
+    custom.style.display = 'block';
+    cuotasSeleccionadas = 0;
+  } else {
+    custom.style.display = 'none';
+    cuotasSeleccionadas = parseInt(val);
+  }
+}
+
+// ── GUARDAR GASTO (EFECTIVO) ──
 function guardarGasto() {
   var monto = parseFloat(document.getElementById('g-monto').value);
   if (!monto || monto <= 0) { toast('❌ Ingresá un monto'); return; }
   var btn = document.getElementById('btn-save');
   btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
-  apiPost({
-    webAction:   'agregarGasto',
-    monto:       monto,
-    categoria:   catSeleccionada,
-    descripcion: document.getElementById('g-desc').value,
-    fecha:       document.getElementById('g-fecha').value,
-    tarjeta:     null
-  }).then(function(r) {
+  
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      webAction: 'agregarGasto',
+      monto: monto,
+      categoria: catSeleccionada,
+      descripcion: document.getElementById('g-desc').value,
+      fecha: document.getElementById('g-fecha').value,
+      tarjeta: null
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(r) {
     if (r.ok) {
       toast('✅ ¡Guardado!');
       document.getElementById('g-monto').value = '';
-      document.getElementById('g-desc').value  = '';
+      document.getElementById('g-desc').value = '';
       cargarTodo();
     } else toast('❌ ' + (r.error || 'Error'));
-  }).catch(function(){ toast('❌ Sin conexión'); })
-  .finally(function(){ btn.disabled=false; btn.innerHTML='<span>💾</span> Guardar gasto'; });
+  })
+  .catch(function(err) { 
+    console.error(err);
+    toast('❌ Sin conexión: ' + err.message); 
+  })
+  .finally(function() { 
+    btn.disabled = false; 
+    btn.innerHTML = '<span>💾</span> Guardar gasto'; 
+  });
+}
+
+// ── GUARDAR GASTO CON TARJETA ──
+function guardarGastoTC() {
+  var monto = parseFloat(document.getElementById('tc-monto').value);
+  if (!monto || monto <= 0) { toast('❌ Ingresá un monto'); return; }
+
+  var custom = document.getElementById('tc-cuotas-custom');
+  if (custom.style.display !== 'none') cuotasSeleccionadas = parseInt(custom.value) || 1;
+
+  var btn = document.getElementById('btn-save-tc');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
+
+  var fecha = document.getElementById('tc-fecha').value;
+
+  if (cuotasSeleccionadas > 1) {
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webAction: 'agregarCuota',
+        descripcion: document.getElementById('tc-desc').value || catSeleccionadaTC,
+        total: monto,
+        cuotas: cuotasSeleccionadas,
+        tarjeta: 'TC',
+        pagadas: 0
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (r.ok) {
+        toast('✅ Cuota registrada (' + cuotasSeleccionadas + ' cuotas de $' + (monto/cuotasSeleccionadas).toFixed(0) + ')');
+        document.getElementById('tc-monto').value = '';
+        document.getElementById('tc-desc').value = '';
+        cargarTodo();
+      } else toast('❌ ' + (r.error||'Error'));
+    })
+    .catch(function(err) { toast('❌ Sin conexión: ' + err.message); })
+    .finally(function() { btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
+  } else {
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webAction: 'agregarGasto',
+        monto: monto,
+        categoria: catSeleccionadaTC,
+        descripcion: document.getElementById('tc-desc').value,
+        fecha: fecha,
+        tarjeta: 'TC'
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (r.ok) {
+        toast('✅ ¡Guardado con tarjeta!');
+        document.getElementById('tc-monto').value = '';
+        document.getElementById('tc-desc').value = '';
+        cargarTodo();
+      } else toast('❌ ' + (r.error||'Error'));
+    })
+    .catch(function(err) { toast('❌ Sin conexión: ' + err.message); })
+    .finally(function() { btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
+  }
 }
 
 // ── RESUMEN ──
@@ -515,10 +623,17 @@ function renderGastos(gastos) {
 
 function borrarGasto(id) {
   if (!confirm('¿Borrar este gasto?')) return;
-  apiPost({ webAction:'borrarGasto', id:id }).then(function(r) {
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ webAction: 'borrarGasto', id: id })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(r) {
     if (r.ok) { toast('🗑 Borrado'); cargarGastos(); cargarResumen(); }
     else toast('❌ ' + r.error);
-  });
+  })
+  .catch(function(err){ toast('❌ Sin conexión'); });
 }
 
 // ── GRÁFICOS ──
@@ -564,14 +679,12 @@ function cargarTC() {
 function renderTC(d) {
   var html = '';
 
-  // Info del período
   var hoy = new Date().toISOString().split('T')[0];
   var proximoCierre = d.proximoCierre;
   var proximoVto    = d.proximoVto;
   var proximoCobro  = d.proximoCobro;
   var cobraAntes    = d.cobraAntes;
 
-  // Header info
   html += '<div class="chart-card">' +
     '<div class="stats-grid">' +
     '<div class="stat-card"><div class="stat-icon">✂️</div><div class="stat-label">Próx. cierre</div><div class="stat-value pink">' + fd(proximoCierre) + '</div></div>' +
@@ -583,7 +696,6 @@ function renderTC(d) {
     '</div></div>' +
     '</div>';
 
-  // Período a pagar (si aplica)
   if (d.entreVtoYCierre && d.totalAPagar > 0) {
     html += '<div class="chart-card">' +
       '<div class="section-title" style="color:#e64a19">📌 A pagar ahora</div>' +
@@ -613,7 +725,6 @@ function renderTC(d) {
     html += '</div>';
   }
 
-  // Período acumulando
   html += '<div class="chart-card">' +
     '<div class="section-title">📈 Acumulando</div>' +
     '<div class="stat-card" style="margin-bottom:10px">' +
@@ -635,78 +746,6 @@ function renderTC(d) {
   html += '</div>';
 
   document.getElementById('tc-content').innerHTML = html;
-}
-
-// ── TC ──
-function selectCatTC(btn) {
-  btn.closest('.quick-card').querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  catSeleccionadaTC = btn.getAttribute('data-cat');
-}
-
-function selectCuotas(btn) {
-  document.querySelectorAll('.cuota-chip').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  var val = btn.getAttribute('data-cuotas');
-  var custom = document.getElementById('tc-cuotas-custom');
-  if (val === 'custom') {
-    custom.style.display = 'block';
-    cuotasSeleccionadas = 0;
-  } else {
-    custom.style.display = 'none';
-    cuotasSeleccionadas = parseInt(val);
-  }
-}
-
-function guardarGastoTC() {
-  var monto = parseFloat(document.getElementById('tc-monto').value);
-  if (!monto || monto <= 0) { toast('❌ Ingresá un monto'); return; }
-
-  var custom = document.getElementById('tc-cuotas-custom');
-  if (custom.style.display !== 'none') cuotasSeleccionadas = parseInt(custom.value) || 1;
-
-  var btn = document.getElementById('btn-save-tc');
-  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
-
-  var fecha = document.getElementById('tc-fecha').value;
-
-  if (cuotasSeleccionadas > 1) {
-    // Registrar como cuota
-    apiPost({
-      webAction:   'agregarCuota',
-      descripcion: document.getElementById('tc-desc').value || catSeleccionadaTC,
-      total:       monto,
-      cuotas:      cuotasSeleccionadas,
-      tarjeta:     'TC',
-      pagadas:     0
-    }).then(function(r) {
-      if (r.ok) {
-        toast('✅ Cuota registrada (' + cuotasSeleccionadas + ' cuotas de $' + (monto/cuotasSeleccionadas).toFixed(0) + ')');
-        document.getElementById('tc-monto').value = '';
-        document.getElementById('tc-desc').value  = '';
-        cargarTodo();
-      } else toast('❌ ' + (r.error||'Error'));
-    }).catch(function(){ toast('❌ Sin conexión'); })
-    .finally(function(){ btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
-  } else {
-    // Registrar como gasto TC simple
-    apiPost({
-      webAction:   'agregarGasto',
-      monto:       monto,
-      categoria:   catSeleccionadaTC,
-      descripcion: document.getElementById('tc-desc').value,
-      fecha:       fecha,
-      tarjeta:     'TC'
-    }).then(function(r) {
-      if (r.ok) {
-        toast('✅ ¡Guardado con tarjeta!');
-        document.getElementById('tc-monto').value = '';
-        document.getElementById('tc-desc').value  = '';
-        cargarTodo();
-      } else toast('❌ ' + (r.error||'Error'));
-    }).catch(function(){ toast('❌ Sin conexión'); })
-    .finally(function(){ btn.disabled=false; btn.innerHTML='<span>💳</span> Guardar con tarjeta'; });
-  }
 }
 
 // ── UTILS ──
