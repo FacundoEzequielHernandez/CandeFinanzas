@@ -446,30 +446,32 @@ function guardarGasto() {
   var btn = document.getElementById('btn-save');
   btn.disabled = true; btn.innerHTML = '<span>⏳</span> Guardando...';
   
-  fetch(API_URL, {
+fetch(API_URL, {
   method: 'POST',
-  body: JSON.stringify({
+  body: new URLSearchParams({
     webAction: 'agregarGasto',
     monto: monto,
     categoria: catSeleccionada,
     descripcion: document.getElementById('g-desc').value,
     fecha: document.getElementById('g-fecha').value,
-    tarjeta: null
+    tarjeta: ''
   })
 })
-  .then(function(r) { return r.json(); })
-  .then(function(r) {
-    if (r.ok) {
-      toast('✅ ¡Guardado!');
-      document.getElementById('g-monto').value = '';
-      document.getElementById('g-desc').value = '';
-      cargarTodo();
-    } else toast('❌ ' + (r.error || 'Error'));
-  })
-  .catch(function(err) { 
-    console.error(err);
-    toast('❌ Sin conexión: ' + err.message); 
-  })
+.then(r => r.json())
+.then(function(r) {
+  if (r.ok) {
+    toast('✅ ¡Guardado!');
+    document.getElementById('g-monto').value = '';
+    document.getElementById('g-desc').value = '';
+    cargarTodo();
+  } else {
+    toast('❌ ' + (r.error || 'Error'));
+  }
+})
+.catch(function(err) {
+  console.error(err);
+  toast('❌ Sin conexión: ' + err.message);
+});
   .finally(function() { 
     btn.disabled = false; 
     btn.innerHTML = '<span>💾</span> Guardar gasto'; 
